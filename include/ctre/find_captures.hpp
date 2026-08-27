@@ -8,9 +8,7 @@
 
 namespace ctre {
 
-CTRE_EXPORT template <typename Pattern> constexpr auto find_captures(Pattern) noexcept {
-	return find_captures(ctll::list<Pattern>(), ctll::list<>());
-}
+CTRE_EXPORT template <typename Pattern> constexpr auto find_captures(Pattern) noexcept { return {}; }
 
 CTRE_EXPORT template <typename... Output> constexpr auto find_captures(ctll::list<>, ctll::list<Output...> output) noexcept {
 	return output;

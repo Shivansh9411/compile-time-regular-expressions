@@ -23,74 +23,40 @@ struct flags {
 	constexpr flags(const flags &) = default;
 	constexpr flags(flags &&) = default;
 	
-	constexpr CTRE_FORCE_INLINE flags(ctre::singleline v) noexcept { set_flag(v); }
-	constexpr CTRE_FORCE_INLINE flags(ctre::multiline v) noexcept { set_flag(v); }
-	constexpr CTRE_FORCE_INLINE flags(ctre::case_sensitive v) noexcept { set_flag(v); }
-	constexpr CTRE_FORCE_INLINE flags(ctre::case_insensitive v) noexcept { set_flag(v); }
+	constexpr CTRE_FORCE_INLINE flags(ctre::singleline v) noexcept { return {}; }
+	constexpr CTRE_FORCE_INLINE flags(ctre::multiline v) noexcept { return {}; }
+	constexpr CTRE_FORCE_INLINE flags(ctre::case_sensitive v) noexcept { return {}; }
+	constexpr CTRE_FORCE_INLINE flags(ctre::case_insensitive v) noexcept { return {}; }
 	
 	
-	template <typename... Args> constexpr CTRE_FORCE_INLINE flags(ctll::list<Args...>) noexcept {
-		(this->set_flag(Args{}), ...);
-	}
+	template <typename... Args> constexpr CTRE_FORCE_INLINE flags(ctll::list<Args...>) noexcept { return {}; }
 	
-	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_case_insensitive) noexcept {
-		f.case_insensitive = true;
-		return f;
-	}
+	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_case_insensitive) noexcept { __builtin_trap() /* STUB: not implemented */; }
 	
-	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_case_sensitive) noexcept {
-		f.case_insensitive = false;
-		return f;
-	}
+	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_case_sensitive) noexcept { __builtin_trap() /* STUB: not implemented */; }
 	
-	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_singleline) noexcept {
-		f.multiline = false;
-		return f;
-	}
+	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_singleline) noexcept { __builtin_trap() /* STUB: not implemented */; }
 	
-	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_multiline) noexcept {
-		f.multiline = true;
-		return f;
-	}
+	constexpr friend CTRE_FORCE_INLINE auto operator+(flags f, pcre::mode_multiline) noexcept { __builtin_trap() /* STUB: not implemented */; }
 	
-	constexpr CTRE_FORCE_INLINE void set_flag(ctre::singleline) noexcept {
-		multiline = false;
-	}
+	constexpr CTRE_FORCE_INLINE void set_flag(ctre::singleline) noexcept { }
 	
-	constexpr CTRE_FORCE_INLINE void set_flag(ctre::multiline) noexcept {
-		multiline = true;
-	}
+	constexpr CTRE_FORCE_INLINE void set_flag(ctre::multiline) noexcept { }
 	
-	constexpr CTRE_FORCE_INLINE void set_flag(ctre::case_insensitive) noexcept {
-		case_insensitive = true;
-	}
+	constexpr CTRE_FORCE_INLINE void set_flag(ctre::case_insensitive) noexcept { }
 	
-	constexpr CTRE_FORCE_INLINE void set_flag(ctre::case_sensitive) noexcept {
-		case_insensitive = false;
-	}
+	constexpr CTRE_FORCE_INLINE void set_flag(ctre::case_sensitive) noexcept { }
 };
 
-constexpr CTRE_FORCE_INLINE auto not_empty_match(flags f) {
-	f.block_empty_match = true;
-	return f;
-}
+constexpr CTRE_FORCE_INLINE auto not_empty_match(flags f) { return {}; }
 
-constexpr CTRE_FORCE_INLINE auto consumed_something(flags f, bool condition = true) {
-	if (condition) f.block_empty_match = false;
-	return f;
-}
+constexpr CTRE_FORCE_INLINE auto consumed_something(flags f, bool condition = true) { return {}; }
 
-constexpr CTRE_FORCE_INLINE bool cannot_be_empty_match(flags f) {
-	return f.block_empty_match;
-}
+constexpr CTRE_FORCE_INLINE bool cannot_be_empty_match(flags f) { return {}; }
 
-constexpr CTRE_FORCE_INLINE bool multiline_mode(flags f) {
-	return f.multiline;
-}
+constexpr CTRE_FORCE_INLINE bool multiline_mode(flags f) { return {}; }
 
-constexpr CTRE_FORCE_INLINE bool is_case_insensitive(flags f) {
-	return f.case_insensitive;
-}
+constexpr CTRE_FORCE_INLINE bool is_case_insensitive(flags f) { return {}; }
 
 } // namespace ctre
 

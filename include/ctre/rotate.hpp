@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 #ifndef CTRE__ROTATE__HPP
 #define CTRE__ROTATE__HPP
 
@@ -48,7 +50,7 @@ static auto rotate(empty) -> empty;
 
 // select rotates only insides of selection, not select itself
 template <typename... Content> static auto rotate(select<Content...>) {
-  return select<decltype(rotate(Content{}))...>{};
+    __builtin_trap() /* STUB: not implemented */;
 }
 
 
@@ -57,11 +59,11 @@ template <size_t a, size_t b, typename... Content> static auto rotate(lazy_repea
 template <size_t a, size_t b, typename... Content> static auto rotate(possessive_repeat<a,b,Content...>) -> decltype(ctre::convert_to_repeat<possessive_repeat, a, b>(ctll::rotate(ctll::list<decltype(rotate(Content{}))...>{})));
 
 template <size_t Index, typename... Content> static auto rotate(capture<Index, Content...>) {
-	return ctre::convert_to_capture<Index>(ctll::rotate(ctll::list<decltype(rotate(Content{}))...>{}));
+    __builtin_trap() /* STUB: not implemented */;
 }
 
 template <size_t Index, typename Name, typename... Content> static auto rotate(capture_with_name<Index, Name, Content...>) {
-	return ctre::convert_to_named_capture<Index, Name>(ctll::rotate(ctll::list<decltype(rotate(Content{}))...>{}));
+    __builtin_trap() /* STUB: not implemented */;
 }
 
 template <size_t Index> static auto rotate(back_reference<Index>) -> back_reference<Index>;
@@ -72,7 +74,7 @@ template <typename... Content> static auto rotate(look_start<Content...>) -> loo
 template <auto... Str> static auto rotate(string<Str...>) -> decltype((string<>{} + ... + rotate_value<Str>{}));
 
 template <typename... Content> static auto rotate(sequence<Content...>) {
-	return ctre::convert_to_basic_list<sequence>(ctll::rotate(ctll::list<decltype(rotate(Content{}))...>{}));
+    __builtin_trap() /* STUB: not implemented */;
 }
 
 // we don't rotate lookaheads
@@ -84,7 +86,7 @@ template <typename... Content> static auto rotate(lookbehind_negative<Content...
 static auto rotate(atomic_start) -> atomic_start;
 
 template <typename... Content> static auto rotate(atomic_group<Content...>) {
-	return ctre::convert_to_basic_list<atomic_group>(ctll::rotate(ctll::list<decltype(rotate(Content{}))...>{}));
+    __builtin_trap() /* STUB: not implemented */;
 }
 
 template <typename... Content> static auto rotate(boundary<Content...>) -> boundary<Content...>;

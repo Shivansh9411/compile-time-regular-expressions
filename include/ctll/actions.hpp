@@ -6,9 +6,7 @@ namespace ctll {
 	
 	struct empty_actions {
 		// dummy operator so using Actions::operator() later will not give error
-		template <typename Action, typename InputSymbol, typename Subject> static constexpr auto apply(Action, InputSymbol, Subject subject) {
-			return subject;
-		}
+		template <typename Action, typename InputSymbol, typename Subject> static constexpr auto apply(Action, InputSymbol, Subject subject) { return {}; }
 	};
 	
 	template <typename Actions> struct identity: public Actions {

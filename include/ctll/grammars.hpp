@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 #ifndef CTLL__GRAMMARS__HPP
 #define CTLL__GRAMMARS__HPP
 
@@ -21,8 +23,8 @@ struct empty_stack_symbol {};
 template <typename... Ts> using push = list<Ts...>;
 
 // accept/reject type for controlling output of LL1 machine
-struct accept { constexpr explicit operator bool() noexcept { return true; } };
-struct reject { constexpr explicit operator bool() noexcept { return false; } };
+struct accept { constexpr explicit operator bool() noexcept { return {}; } };
+struct reject { constexpr explicit operator bool() noexcept { return {}; } };
 
 // action type, every action item in grammar must inherit from
 struct action { 
@@ -41,9 +43,7 @@ template <typename... Ts> constexpr auto push_front(epsilon, list<Ts...>) -> lis
 
 template <typename... As, typename... Bs> constexpr auto push_front(list<As...>, list<Bs...>) -> list<As..., Bs...> { return {}; }
 
-template <typename T, typename... As> constexpr auto pop_front_and_push_front(T item, list<As...> l) {
-	return push_front(item, pop_front(l));
-}
+template <typename T, typename... As> constexpr auto pop_front_and_push_front(T item, list<As...> l) { return {}; }
 
 // SPECIAL matching types for nicer grammars
 

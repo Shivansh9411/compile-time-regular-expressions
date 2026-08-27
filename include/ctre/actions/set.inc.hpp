@@ -19,28 +19,17 @@ template <template <typename...> typename SetType, typename T, typename... As, b
 // END OF UTILITY
 
 // set_start
-template <auto V, typename A,typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_start, ctll::term<V>, pcre_context<ctll::list<A,Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(set<A>(), ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename A,typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_start, ctll::term<V>, pcre_context<ctll::list<A,Ts...>, Parameters> subject) { return {}; }
 
 // set_empty
-template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_empty, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(set<>(), ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_empty, ctll::term<V>, pcre_context<ctll::list<Ts...>, Parameters> subject) { return {}; }
 
 // set_make
-template <auto V, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_make, ctll::term<V>, pcre_context<ctll::list<set<Content...>, Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(set<Content...>(), ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_make, ctll::term<V>, pcre_context<ctll::list<set<Content...>, Ts...>, Parameters> subject) { return {}; }
 // set_make_negative
-template <auto V, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_make_negative, ctll::term<V>, pcre_context<ctll::list<set<Content...>, Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(negative_set<Content...>(), ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_make_negative, ctll::term<V>, pcre_context<ctll::list<set<Content...>, Ts...>, Parameters> subject) { return {}; }
 // set{A...} + B = set{A,B}
-template <auto V, typename A, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_combine, ctll::term<V>, pcre_context<ctll::list<A,set<Content...>,Ts...>, Parameters> subject) {
-	auto new_set = push_back_into_set<set>(A(), set<Content...>());
-	return pcre_context{ctll::push_front(new_set, ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename A, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_combine, ctll::term<V>, pcre_context<ctll::list<A,set<Content...>,Ts...>, Parameters> subject) { return {}; }
 // TODO checkme
 //// set{A...} + set{B...} = set{A...,B...}
 //template <auto V, typename... As, typename... Bs, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_combine, ctll::term<V>, pcre_context<ctll::list<set<As...>,set<Bs...>,Ts...>, Parameters> subject) {
@@ -49,10 +38,7 @@ template <auto V, typename A, typename... Content, typename... Ts, typename Para
 //}
 
 // negative_set{A...} + B = negative_set{A,B}
-template <auto V, typename A, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_combine, ctll::term<V>, pcre_context<ctll::list<A,negative_set<Content...>,Ts...>, Parameters> subject) {
-	auto new_set = push_back_into_set<set>(A(), set<Content...>());
-	return pcre_context{ctll::push_front(new_set, ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename A, typename... Content, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_combine, ctll::term<V>, pcre_context<ctll::list<A,negative_set<Content...>,Ts...>, Parameters> subject) { return {}; }
 // TODO checkme
 //// negative_set{A...} + negative_set{B...} = negative_set{A...,B...}
 //template <auto V, typename... As, typename... Bs, typename... Ts, typename Parameters> static constexpr auto apply(pcre::set_combine, ctll::term<V>, pcre_context<ctll::list<negative_set<As...>,negative_set<Bs...>,Ts...>, Parameters> subject) {
@@ -60,13 +46,9 @@ template <auto V, typename A, typename... Content, typename... Ts, typename Para
 //	return pcre_context{ctll::push_front(new_set, ctll::list<Ts...>()), subject.parameters};
 //}
 // negate_class_named: [[^:digit:]] = [^[:digit:]]
-template <auto V, typename A, typename... Ts, typename Parameters> static constexpr auto apply(pcre::negate_class_named, ctll::term<V>, pcre_context<ctll::list<A, Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(negate<A>(), ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, typename A, typename... Ts, typename Parameters> static constexpr auto apply(pcre::negate_class_named, ctll::term<V>, pcre_context<ctll::list<A, Ts...>, Parameters> subject) { return {}; }
 
 // add range to set
-template <auto V, auto B, auto A, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_range, ctll::term<V>, pcre_context<ctll::list<character<B>,character<A>, Ts...>, Parameters> subject) {
-	return pcre_context{ctll::push_front(char_range<A,B>(), ctll::list<Ts...>()), subject.parameters};
-}
+template <auto V, auto B, auto A, typename... Ts, typename Parameters> static constexpr auto apply(pcre::make_range, ctll::term<V>, pcre_context<ctll::list<character<B>,character<A>, Ts...>, Parameters> subject) { return {}; }
 
 #endif

@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 #ifndef CTRE_V2__CTRE__RANGE__HPP
 #define CTRE_V2__CTRE__RANGE__HPP
 
@@ -11,14 +13,10 @@ template <typename BeginIterator, typename EndIterator, typename RE, typename Re
 	BeginIterator _begin;
 	EndIterator _end;
 	
-	constexpr CTRE_FORCE_INLINE regex_range(BeginIterator begin, EndIterator end) noexcept: _begin{begin}, _end{end} { }
+	constexpr CTRE_FORCE_INLINE regex_range(BeginIterator begin, EndIterator end) noexcept: _begin{begin}, _end{end} { return {}; }
 	
-	constexpr CTRE_FORCE_INLINE auto begin() const noexcept {
-		return regex_iterator<BeginIterator, EndIterator, RE, ResultIterator>(_begin, _end);
-	}
-	constexpr CTRE_FORCE_INLINE auto end() const noexcept {
-		return regex_end_iterator{};
-	}
+	constexpr CTRE_FORCE_INLINE auto begin() const noexcept { return {}; }
+	constexpr CTRE_FORCE_INLINE auto end() const noexcept { return {}; }
 };
 
 template <typename... Ts> constexpr bool is_range<regex_range<Ts...>> = true;
@@ -27,14 +25,10 @@ template <typename BeginIterator, typename EndIterator, typename RE, typename Re
 	BeginIterator _begin;
 	EndIterator _end;
 	
-	constexpr CTRE_FORCE_INLINE regex_split_range(BeginIterator begin, EndIterator end) noexcept: _begin{begin}, _end{end} { }
+	constexpr CTRE_FORCE_INLINE regex_split_range(BeginIterator begin, EndIterator end) noexcept: _begin{begin}, _end{end} { return {}; }
 	
-	constexpr CTRE_FORCE_INLINE auto begin() const noexcept {
-		return regex_split_iterator<BeginIterator, EndIterator, RE, ResultIterator>(_begin, _end);
-	}
-	constexpr CTRE_FORCE_INLINE auto end() const noexcept {
-		return regex_end_iterator{};
-	}
+	constexpr CTRE_FORCE_INLINE auto begin() const noexcept { return {}; }
+	constexpr CTRE_FORCE_INLINE auto end() const noexcept { return {}; }
 };
 
 template <typename... Ts> constexpr bool is_range<regex_split_range<Ts...>> = true;
@@ -57,78 +51,38 @@ template <typename Range, typename RE> struct multi_subject_range {
 		value_type current_result{};
 		
 		constexpr CTRE_FORCE_INLINE iterator() noexcept = default;
-		constexpr CTRE_FORCE_INLINE iterator(first_type f, last_type l) noexcept: first{f}, last{l}, current_result{find_first()} { }
+		constexpr CTRE_FORCE_INLINE iterator(first_type f, last_type l) noexcept: first{f}, last{l}, current_result{find_first()} {
+    
+}
 		
-		constexpr CTRE_FORCE_INLINE value_type find_first() noexcept {
-			while (first != last) {
-				if (auto res = RE::exec(*first)) return res;
-				else ++first;
-			}
-			return {};
-		}
+		constexpr CTRE_FORCE_INLINE value_type find_first() noexcept { return {}; }
 		
-		constexpr CTRE_FORCE_INLINE reference operator*() const noexcept {
-			return current_result;
-		}
+		constexpr CTRE_FORCE_INLINE reference operator*() const noexcept { return {}; }
 		
-		constexpr CTRE_FORCE_INLINE pointer operator->() const noexcept {
-			return &current_result;
-		}
+		constexpr CTRE_FORCE_INLINE pointer operator->() const noexcept { return {}; }
 		
-		constexpr CTRE_FORCE_INLINE iterator & operator++() noexcept {
-			++first;
-			current_result = find_first();
-			return *this;
-		}
-		constexpr CTRE_FORCE_INLINE iterator operator++(int) noexcept {
-			auto previous = *this;
-			this->operator++();
-			return previous;
-		}
+		constexpr CTRE_FORCE_INLINE iterator & operator++() noexcept { return {}; }
+		constexpr CTRE_FORCE_INLINE iterator operator++(int) noexcept { return {}; }
 		
-		friend constexpr CTRE_FORCE_INLINE bool operator==(const iterator & left, const iterator & right) noexcept {
-			return left.first == right.first;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator!=(const iterator & left, const iterator & right) noexcept {
-			return !(left.first == right.first);
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator<(const iterator & left, const iterator & right) noexcept {
-			return left.first < right.first;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator>(const iterator & left, const iterator & right) noexcept {
-			return left.first > right.first;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator<=(const iterator & left, const iterator & right) noexcept {
-			return left.first <= right.first;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator>=(const iterator & left, const iterator & right) noexcept {
-			return left.first >= right.first;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator==(const iterator & left, end_iterator) noexcept {
-			return left.first == left.last;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator==(end_iterator, const iterator & right) noexcept {
-			return right.first == right.last;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator!=(const iterator & left, end_iterator) noexcept {
-			return left.first != left.last;
-		}
-		friend constexpr CTRE_FORCE_INLINE bool operator!=(end_iterator, const iterator & right) noexcept {
-			return right.first == right.last;
-		}
+		friend constexpr CTRE_FORCE_INLINE bool operator==(const iterator & left, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator!=(const iterator & left, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator<(const iterator & left, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator>(const iterator & left, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator<=(const iterator & left, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator>=(const iterator & left, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator==(const iterator & left, end_iterator) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator==(end_iterator, const iterator & right) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator!=(const iterator & left, end_iterator) noexcept { return {}; }
+		friend constexpr CTRE_FORCE_INLINE bool operator!=(end_iterator, const iterator & right) noexcept { return {}; }
 	};
 	
 	Range range{};
 	
 	constexpr CTRE_FORCE_INLINE multi_subject_range() noexcept = default;
-	constexpr CTRE_FORCE_INLINE multi_subject_range(Range r) noexcept: range{r} { }
+	constexpr CTRE_FORCE_INLINE multi_subject_range(Range r) noexcept: range{r} { return {}; }
 	
-	constexpr CTRE_FORCE_INLINE auto begin() const noexcept {
-		return iterator{range.begin(), range.end()};
-	}
-	constexpr CTRE_FORCE_INLINE auto end() const noexcept {
-		return end_iterator{};
-	}
+	constexpr CTRE_FORCE_INLINE auto begin() const noexcept { return {}; }
+	constexpr CTRE_FORCE_INLINE auto end() const noexcept { return {}; }
 };
 
 // this is not regex range!

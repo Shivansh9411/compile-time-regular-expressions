@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 #ifndef CTRE__PCRE_ACTIONS__HPP
 #define CTRE__PCRE_ACTIONS__HPP
 

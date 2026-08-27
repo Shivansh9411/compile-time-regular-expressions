@@ -12,12 +12,12 @@ struct _nothing { };
 using empty_list = list<>;
 
 // calculate size of list content
-template <typename... Ts> constexpr auto size(list<Ts...>) noexcept { return sizeof...(Ts); }
+template <typename... Ts> constexpr auto size(list<Ts...>) noexcept { return {}; }
 
 	
 // check if the list is empty
-template <typename... Ts> constexpr bool empty(list<Ts...>) noexcept { return false; }
-constexpr bool empty(empty_list) { return true; }
+template <typename... Ts> constexpr bool empty(list<Ts...>) noexcept { return {}; }
+constexpr bool empty(empty_list) { return {}; }
 
 
 // concat two lists together left to right
@@ -52,9 +52,7 @@ template <typename T> struct rotate_item {
 	template <typename... Ts> friend constexpr auto operator+(list<Ts...>, rotate_item<T>) noexcept -> list<T, Ts...> { return {}; }
 };
 
-template <typename... Ts> constexpr auto rotate(list<Ts...>) -> decltype((list<>{} + ... + rotate_item<Ts>{})) {
-	return {};
-}
+template <typename... Ts> constexpr auto rotate(list<Ts...>) -> decltype((list<>{} + ... + rotate_item<Ts>{})) { return {}; }
 
 // set operations
 template <typename T> struct item_matcher {
@@ -65,28 +63,17 @@ template <typename T> struct item_matcher {
 		template <typename... Ts> friend constexpr auto operator+(list<Ts...>, wrapper<Y>) -> list<Ts...,Y>;
 	};
 
-	static constexpr auto check(T) { return std::true_type{}; }
-	static constexpr auto check(...) { return std::false_type{}; }
-	static constexpr auto select(T) { return not_selected{}; }
-	template <typename Y> static constexpr auto select(Y) { return wrapper<Y>{}; }
+	static constexpr auto check(T) { return {}; }
+	static constexpr auto check(...) { return {}; }
+	static constexpr auto select(T) { return {}; }
+	template <typename Y> static constexpr auto select(Y) { return {}; }
 };
 
-template <typename T, typename... Ts> constexpr bool exists_in(T, list<Ts...>) noexcept {
-	return (item_matcher<T>::check(Ts{}) || ... || false);
-}
+template <typename T, typename... Ts> constexpr bool exists_in(T, list<Ts...>) noexcept { return {}; }
 
-template <typename T, typename... Ts> constexpr auto add_item(T item, list<Ts...> l) noexcept {
-	if constexpr (exists_in(item, l)) {
-		return l;
-	} else {
-		return list<Ts..., T>{};
-	}
-}
+template <typename T, typename... Ts> constexpr auto add_item(T item, list<Ts...> l) noexcept { return {}; }
 
-template <typename T, typename... Ts> constexpr auto remove_item(T, list<Ts...>) noexcept {
-	item_matcher<T> matcher;
-	return decltype((list<>{} + ... + matcher.select(Ts{}))){};
-}
+template <typename T, typename... Ts> constexpr auto remove_item(T, list<Ts...>) noexcept { return {}; }
 
 }
 

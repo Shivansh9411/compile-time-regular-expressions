@@ -1,3 +1,5 @@
+#include <stdexcept>
+#include <cstdlib>
 #pragma once
 
 #ifndef UNICODE_DB_IN_A_MODULE
@@ -105,82 +107,20 @@ namespace detail {
 namespace uni::detail {
 
 template<class ForwardIt, class T, class Compare>
-constexpr ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp) {
-    ForwardIt it = first;
-    typename std::iterator_traits<ForwardIt>::difference_type count = std::distance(first, last);
-    typename std::iterator_traits<ForwardIt>::difference_type step = count / 2;
-
-    while(count > 0) {
-        it = first;
-        step = count / 2;
-        std::advance(it, step);
-        if(!comp(value, *it)) {
-            first = ++it;
-            count -= step + 1;
-        } else
-            count = step;
-    }
-    return first;
-}
+constexpr ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp) { return {}; }
 
 template<class ForwardIt, class T, class Compare>
-constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp) {
-    ForwardIt it = first;
-    typename std::iterator_traits<ForwardIt>::difference_type count = std::distance(first, last);
-    typename std::iterator_traits<ForwardIt>::difference_type step = count / 2;
-
-    while(count > 0) {
-        it = first;
-        step = count / 2;
-        std::advance(it, step);
-        if(comp(*it, value)) {
-            first = ++it;
-            count -= step + 1;
-        } else
-            count = step;
-    }
-    return first;
-}
+constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp) { return {}; }
 
 template<class ForwardIt, class T>
-constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value) {
-    ForwardIt it = first;
-    typename std::iterator_traits<ForwardIt>::difference_type count = std::distance(first, last);
-    typename std::iterator_traits<ForwardIt>::difference_type step = count / 2;
-
-    while(count > 0) {
-        it = first;
-        step = count / 2;
-        std::advance(it, step);
-        if(*it < value) {
-            first = ++it;
-            count -= step + 1;
-        } else
-            count = step;
-    }
-    return first;
-}
+constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value) { return {}; }
 
 template<class ForwardIt, class T>
-constexpr bool binary_search(ForwardIt first, ForwardIt last, const T& value) {
-    first = detail::lower_bound(first, last, value);
-    return (!(first == last) && !(value < *first));
-}
+constexpr bool binary_search(ForwardIt first, ForwardIt last, const T& value) { return {}; }
 template<typename T, auto N>
 struct compact_range {
     std::uint32_t _data[N];
-    constexpr T value(char32_t cp, T default_value) const {
-        const auto end = std::end(_data);
-        auto it =
-            detail::upper_bound(std::begin(_data), end, cp, [](char32_t local_cp, uint32_t v) {
-                char32_t c = (v >> 8);
-                return local_cp < c;
-            });
-        if(it == end)
-            return default_value;
-        it--;
-        return *(it)&0xFF;
-    }
+    constexpr T value(char32_t cp, T default_value) const { return {}; }
 };
 template<class T, class... U>
 compact_range(T, U...) -> compact_range<T, sizeof...(U) + 1>;
@@ -188,17 +128,7 @@ compact_range(T, U...) -> compact_range<T, sizeof...(U) + 1>;
 template<typename T, auto N>
 struct compact_list {
     std::uint32_t _data[N];
-    constexpr T value(char32_t cp, T default_value) const {
-        const auto end = std::end(_data);
-        auto it =
-            detail::lower_bound(std::begin(_data), end, cp, [](uint32_t v, char32_t local_cp) {
-                char32_t c = (v >> 8);
-                return c < local_cp;
-            });
-        if(it == end || ((*it) >> 8) != cp)
-            return default_value;
-        return *(it)&0xFF;
-    }
+    constexpr T value(char32_t cp, T default_value) const { return {}; }
 };
 template<class T, class... U>
 compact_list(T, U...) -> compact_list<T, sizeof...(U) + 1>;
@@ -234,125 +164,31 @@ struct bool_trie {
     array_t<std::uint8_t, r5_s> r5;     // two level to exploit sparseness of non-BMP
     array_t<std::uint64_t, r6_s> r6;    // again, leaves are shared
 
-    constexpr bool lookup(char32_t u) const {
-        std::uint32_t c = u;
-        if(c < 0x800) {
-            if constexpr(r1_s == 0) {
-                return false;
-            } else {
-                return trie_range_leaf(c, r1[std::size_t(c >> 6)]);
-            }
-        } else if(c < 0x10000) {
-            if constexpr(r3_s == 0) {
-                return false;
-            } else {
-                std::size_t i = (std::size_t(c >> 6) - 0x20);
-                auto child = 0;
-                if(i >= r2_t_f && i < r2_t_f + r2_s)
-                    child = r2[i - r2_t_f];
-                return trie_range_leaf(c, r3[child]);
-            }
-        } else {
-            if constexpr(r6_s == 0)
-                return false;
-            std::size_t i4 = (c >> 12) - 0x10;
-            auto child = 0;
-            if constexpr(r4_s > 0) {
-                if(i4 >= r4_t_f && i4 < r4_t_f + r4_s)
-                    child = r4[i4 - r4_t_f];
-            }
+    constexpr bool lookup(char32_t u) const { return {}; }
 
-            std::size_t i5 = static_cast<std::size_t>(std::size_t(child << 6) +
-                                                      (std::size_t(c >> 6) & std::size_t(0x3f)));
-            auto leaf = 0;
-            if constexpr(r5_s != 0) {
-                if(i5 >= std::size_t(r5_t_f) && i5 < std::size_t(r5_t_f) + r5_s)
-                    leaf = r5[i5 - std::size_t(r5_t_f)];
-            }
-            return trie_range_leaf(c, r6[leaf]);
-        }
-    }
-
-    constexpr bool trie_range_leaf(std::uint32_t c, std::uint64_t chunk) const {
-        return (chunk >> (c & 0b111111)) & 0b1;
-    }
+    constexpr bool trie_range_leaf(std::uint32_t c, std::uint64_t chunk) const { return {}; }
 };
 
 template<std::size_t size>
 struct flat_array {
     char32_t data[size];
-    constexpr bool lookup(char32_t u) const {
-        if constexpr(size < 20) {
-            for(auto it = std::begin(data); it != std::end(data); ++it) {
-                if(*it == u)
-                    return true;
-                if(it == std::end(data))
-                    return false;
-            }
-            return false;
-        } else {
-            return detail::binary_search(std::begin(data), std::end(data), u);
-        }
-    }
+    constexpr bool lookup(char32_t u) const { return {}; }
 };
 
 template<auto N>
 struct range_array {
     std::uint32_t _data[N];
-    constexpr bool lookup(char32_t cp) const {
-        const auto end = std::end(_data);
-        auto it =
-            detail::upper_bound(std::begin(_data), end, cp, [](char32_t local_cp, uint32_t v) {
-                char32_t c = (v >> 8);
-                return local_cp < c;
-            });
-        if(it == end)
-            return false;
-        it--;
-        return (*it) & 0xFF;
-    }
+    constexpr bool lookup(char32_t cp) const { return {}; }
 };
 
 template<class... U>
 range_array(U...) -> range_array<sizeof...(U)>;
 
-constexpr char propcharnorm(char a) {
-    if(a >= 'A' && a <= 'Z')
-        return static_cast<char>(a + char(32));
-    if(a == ' ' || a == '-')
-        return '_';
-    return a;
-}
+constexpr char propcharnorm(char a) { return {}; }
 
-constexpr int propcharcomp(char a, char b) {
-    a = propcharnorm(a);
-    b = propcharnorm(b);
-    if(a == b)
-        return 0;
-    if(a < b)
-        return -1;
-    return 1;
-}
+constexpr int propcharcomp(char a, char b) { return {}; }
 
-constexpr int propnamecomp(std::string_view sa, std::string_view sb) {
-    // workaround, iterators in std::string_view are not constexpr in libc++ (for now)
-    const char* a = sa.data();
-    const char* b = sb.data();
-
-    const char* ae = sa.data() + sa.size();
-    const char* be = sb.data() + sb.size();
-
-    for(; a != ae && b != be; a++, b++) {
-        auto res = propcharcomp(*a, *b);
-        if(res != 0)
-            return res;
-    }
-    if(sa.size() < sb.size())
-        return -1;
-    else if(sb.size() < sa.size())
-        return 1;
-    return 0;
-}
+constexpr int propnamecomp(std::string_view sa, std::string_view sb) { return {}; }
 
 template<typename A, typename B>
 struct pair {
@@ -372,23 +208,15 @@ struct string_with_idx {
 
 namespace uni {
 
-constexpr double numeric_value::value() const {
-    return static_cast<double>(numerator()) / static_cast<double>(_d);
-}
+constexpr double numeric_value::value() const { return {}; }
 
-constexpr long long numeric_value::numerator() const {
-    return _n;
-}
+constexpr long long numeric_value::numerator() const { return {}; }
 
-constexpr int numeric_value::denominator() const {
-    return _d;
-}
+constexpr int numeric_value::denominator() const { return {}; }
 
-constexpr bool numeric_value::is_valid() const {
-    return _d != 0;
-}
+constexpr bool numeric_value::is_valid() const { return {}; }
 
-constexpr numeric_value::numeric_value(long long n, int16_t d) : _n(n), _d(d) {}
+constexpr numeric_value::numeric_value(long long n, int16_t d) : _n(n), _d(d) { }
 
 }    // namespace uni
 
@@ -2923,284 +2751,84 @@ namespace detail::tables {
     static constexpr range_array cat_cs = {0x00000000, 0x00D80001, 0x00E00000};
     static constexpr range_array cat_co = {0x00000000, 0x00E00001, 0x00F90000, 0x0F000001,
                                            0x0FFFFE00, 0x10000001, 0x10FFFE00};
-    constexpr category get_category(char32_t c) {
-        if(cat_co.lookup(c))
-            return category::co;
-        if(cat_lo.lookup(c))
-            return category::lo;
-        if(cat_so.lookup(c))
-            return category::so;
-        if(cat_ll.lookup(c))
-            return category::ll;
-        if(cat_cs.lookup(c))
-            return category::cs;
-        if(cat_mn.lookup(c))
-            return category::mn;
-        if(cat_lu.lookup(c))
-            return category::lu;
-        if(cat_sm.lookup(c))
-            return category::sm;
-        if(cat_no.lookup(c))
-            return category::no;
-        if(cat_nd.lookup(c))
-            return category::nd;
-        if(cat_po.lookup(c))
-            return category::po;
-        if(cat_mc.lookup(c))
-            return category::mc;
-        if(cat_lm.lookup(c))
-            return category::lm;
-        if(cat_nl.lookup(c))
-            return category::nl;
-        if(cat_cf.lookup(c))
-            return category::cf;
-        if(cat_sk.lookup(c))
-            return category::sk;
-        if(cat_ps.lookup(c))
-            return category::ps;
-        if(cat_pe.lookup(c))
-            return category::pe;
-        if(cat_cc.lookup(c))
-            return category::cc;
-        if(cat_sc.lookup(c))
-            return category::sc;
-        if(cat_lt.lookup(c))
-            return category::lt;
-        if(cat_pd.lookup(c))
-            return category::pd;
-        if(cat_zs.lookup(c))
-            return category::zs;
-        if(cat_me.lookup(c))
-            return category::me;
-        if(cat_pi.lookup(c))
-            return category::pi;
-        if(cat_pf.lookup(c))
-            return category::pf;
-        if(cat_pc.lookup(c))
-            return category::pc;
-        if(cat_zp.lookup(c))
-            return category::zp;
-        if(cat_zl.lookup(c))
-            return category::zl;
-        return category::cn;
-    }
+    constexpr category get_category(char32_t c) { return {}; }
 }    // namespace detail::tables
 template<>
-constexpr bool cp_category_is<category::co>(char32_t c) {
-    return detail::tables::cat_co.lookup(c);
-}
+constexpr bool cp_category_is<category::co>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::lo>(char32_t c) {
-    return detail::tables::cat_lo.lookup(c);
-}
+constexpr bool cp_category_is<category::lo>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::so>(char32_t c) {
-    return detail::tables::cat_so.lookup(c);
-}
+constexpr bool cp_category_is<category::so>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::ll>(char32_t c) {
-    return detail::tables::cat_ll.lookup(c);
-}
+constexpr bool cp_category_is<category::ll>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::cs>(char32_t c) {
-    return detail::tables::cat_cs.lookup(c);
-}
+constexpr bool cp_category_is<category::cs>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::mn>(char32_t c) {
-    return detail::tables::cat_mn.lookup(c);
-}
+constexpr bool cp_category_is<category::mn>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::lu>(char32_t c) {
-    return detail::tables::cat_lu.lookup(c);
-}
+constexpr bool cp_category_is<category::lu>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::sm>(char32_t c) {
-    return detail::tables::cat_sm.lookup(c);
-}
+constexpr bool cp_category_is<category::sm>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::no>(char32_t c) {
-    return detail::tables::cat_no.lookup(c);
-}
+constexpr bool cp_category_is<category::no>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::nd>(char32_t c) {
-    return detail::tables::cat_nd.lookup(c);
-}
+constexpr bool cp_category_is<category::nd>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::po>(char32_t c) {
-    return detail::tables::cat_po.lookup(c);
-}
+constexpr bool cp_category_is<category::po>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::mc>(char32_t c) {
-    return detail::tables::cat_mc.lookup(c);
-}
+constexpr bool cp_category_is<category::mc>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::lm>(char32_t c) {
-    return detail::tables::cat_lm.lookup(c);
-}
+constexpr bool cp_category_is<category::lm>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::nl>(char32_t c) {
-    return detail::tables::cat_nl.lookup(c);
-}
+constexpr bool cp_category_is<category::nl>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::cf>(char32_t c) {
-    return detail::tables::cat_cf.lookup(c);
-}
+constexpr bool cp_category_is<category::cf>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::sk>(char32_t c) {
-    return detail::tables::cat_sk.lookup(c);
-}
+constexpr bool cp_category_is<category::sk>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::ps>(char32_t c) {
-    return detail::tables::cat_ps.lookup(c);
-}
+constexpr bool cp_category_is<category::ps>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::pe>(char32_t c) {
-    return detail::tables::cat_pe.lookup(c);
-}
+constexpr bool cp_category_is<category::pe>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::cc>(char32_t c) {
-    return detail::tables::cat_cc.lookup(c);
-}
+constexpr bool cp_category_is<category::cc>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::sc>(char32_t c) {
-    return detail::tables::cat_sc.lookup(c);
-}
+constexpr bool cp_category_is<category::sc>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::lt>(char32_t c) {
-    return detail::tables::cat_lt.lookup(c);
-}
+constexpr bool cp_category_is<category::lt>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::pd>(char32_t c) {
-    return detail::tables::cat_pd.lookup(c);
-}
+constexpr bool cp_category_is<category::pd>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::zs>(char32_t c) {
-    return detail::tables::cat_zs.lookup(c);
-}
+constexpr bool cp_category_is<category::zs>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::me>(char32_t c) {
-    return detail::tables::cat_me.lookup(c);
-}
+constexpr bool cp_category_is<category::me>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::pi>(char32_t c) {
-    return detail::tables::cat_pi.lookup(c);
-}
+constexpr bool cp_category_is<category::pi>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::pf>(char32_t c) {
-    return detail::tables::cat_pf.lookup(c);
-}
+constexpr bool cp_category_is<category::pf>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::pc>(char32_t c) {
-    return detail::tables::cat_pc.lookup(c);
-}
+constexpr bool cp_category_is<category::pc>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::zp>(char32_t c) {
-    return detail::tables::cat_zp.lookup(c);
-}
+constexpr bool cp_category_is<category::zp>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::zl>(char32_t c) {
-    return detail::tables::cat_zl.lookup(c);
-}
+constexpr bool cp_category_is<category::zl>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::cased_letter>(char32_t c) {
-    if(detail::tables::cat_ll.lookup(c))
-        return true;
-    if(detail::tables::cat_lu.lookup(c))
-        return true;
-    if(detail::tables::cat_lt.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::cased_letter>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::letter>(char32_t c) {
-    if(detail::tables::cat_lo.lookup(c))
-        return true;
-    if(detail::tables::cat_ll.lookup(c))
-        return true;
-    if(detail::tables::cat_lu.lookup(c))
-        return true;
-    if(detail::tables::cat_lm.lookup(c))
-        return true;
-    if(detail::tables::cat_lt.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::letter>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::mark>(char32_t c) {
-    if(detail::tables::cat_mn.lookup(c))
-        return true;
-    if(detail::tables::cat_mc.lookup(c))
-        return true;
-    if(detail::tables::cat_me.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::mark>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::number>(char32_t c) {
-    if(detail::tables::cat_no.lookup(c))
-        return true;
-    if(detail::tables::cat_nd.lookup(c))
-        return true;
-    if(detail::tables::cat_nl.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::number>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::punctuation>(char32_t c) {
-    if(detail::tables::cat_po.lookup(c))
-        return true;
-    if(detail::tables::cat_ps.lookup(c))
-        return true;
-    if(detail::tables::cat_pe.lookup(c))
-        return true;
-    if(detail::tables::cat_pd.lookup(c))
-        return true;
-    if(detail::tables::cat_pi.lookup(c))
-        return true;
-    if(detail::tables::cat_pf.lookup(c))
-        return true;
-    if(detail::tables::cat_pc.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::punctuation>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::symbol>(char32_t c) {
-    if(detail::tables::cat_so.lookup(c))
-        return true;
-    if(detail::tables::cat_sm.lookup(c))
-        return true;
-    if(detail::tables::cat_sk.lookup(c))
-        return true;
-    if(detail::tables::cat_sc.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::symbol>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::separator>(char32_t c) {
-    if(detail::tables::cat_zs.lookup(c))
-        return true;
-    if(detail::tables::cat_zp.lookup(c))
-        return true;
-    if(detail::tables::cat_zl.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::separator>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::other>(char32_t c) {
-    if(detail::tables::cat_co.lookup(c))
-        return true;
-    if(detail::tables::cat_cs.lookup(c))
-        return true;
-    if(detail::tables::cat_cf.lookup(c))
-        return true;
-    if(detail::tables::cat_cc.lookup(c))
-        return true;
-    return false;
-}
+constexpr bool cp_category_is<category::other>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_category_is<category::unassigned>(char32_t c) {
-    return cp_category(c) == category::unassigned;
-}
+constexpr bool cp_category_is<category::unassigned>(char32_t c) { return {}; }
 namespace detail::tables {
     static constexpr string_with_idx blocks_names[] = {
         string_with_idx{"adlam", 290},
@@ -4455,41 +4083,8 @@ namespace detail::tables {
                                                              0xFFFFFFFF};
     };
     template<auto N>
-    constexpr script cp_script(char32_t cp) {
-        if(cp > 0x10FFFF)
-            return script::unknown;
-
-        uni::script sc = static_cast<uni::script>(
-            script_data<N>::scripts_data.value(cp, uint8_t(script::unknown)));
-        return sc;
-    }
-    constexpr script get_cp_script(char32_t cp, int idx) {
-        switch(idx) {
-            case 0: return cp_script<0>(cp);
-            case 1: return cp_script<1>(cp);
-            case 2: return cp_script<2>(cp);
-            case 3: return cp_script<3>(cp);
-            case 4: return cp_script<4>(cp);
-            case 5: return cp_script<5>(cp);
-            case 6: return cp_script<6>(cp);
-            case 7: return cp_script<7>(cp);
-            case 8: return cp_script<8>(cp);
-            case 9: return cp_script<9>(cp);
-            case 10: return cp_script<10>(cp);
-            case 11: return cp_script<11>(cp);
-            case 12: return cp_script<12>(cp);
-            case 13: return cp_script<13>(cp);
-            case 14: return cp_script<14>(cp);
-            case 15: return cp_script<15>(cp);
-            case 16: return cp_script<16>(cp);
-            case 17: return cp_script<17>(cp);
-            case 18: return cp_script<18>(cp);
-            case 19: return cp_script<19>(cp);
-            case 20: return cp_script<20>(cp);
-            case 21: return cp_script<21>(cp);
-        }
-        return script::zzzz;
-    }
+    constexpr script cp_script(char32_t cp) { return {}; }
+    constexpr script get_cp_script(char32_t cp, int idx) { return {}; }
     static constexpr compact_list numeric_data8 = {
         0x00003000, 0x00003101, 0x00003202, 0x00003303, 0x00003404, 0x00003505, 0x00003606,
         0x00003707, 0x00003808, 0x00003909, 0x0000B202, 0x0000B303, 0x0000B901, 0x0000BC01,
@@ -7104,145 +6699,75 @@ namespace detail::tables {
          0xffff0003ffffffff, 0x00000001ffffffff, 0x000000003fffffff, 0x00000000000007ff}};
 }    // namespace detail::tables
 template<>
-constexpr bool cp_property_is<property::ahex>(char32_t c) {
-    return detail::tables::prop_ahex_data.lookup(c);
-}
+constexpr bool cp_property_is<property::ahex>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::alpha>(char32_t c) {
-    return detail::tables::prop_alpha_data.lookup(c);
-}
+constexpr bool cp_property_is<property::alpha>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::bidi_c>(char32_t c) {
-    return detail::tables::prop_bidi_c_data.lookup(c);
-}
+constexpr bool cp_property_is<property::bidi_c>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::bidi_m>(char32_t c) {
-    return detail::tables::prop_bidi_m_data.lookup(c);
-}
+constexpr bool cp_property_is<property::bidi_m>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::dash>(char32_t c) {
-    return detail::tables::prop_dash_data.lookup(c);
-}
+constexpr bool cp_property_is<property::dash>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::dep>(char32_t c) {
-    return detail::tables::prop_dep_data.lookup(c);
-}
+constexpr bool cp_property_is<property::dep>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::dia>(char32_t c) {
-    return detail::tables::prop_dia_data.lookup(c);
-}
+constexpr bool cp_property_is<property::dia>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::emoji>(char32_t c) {
-    return detail::tables::prop_emoji_data.lookup(c);
-}
+constexpr bool cp_property_is<property::emoji>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::emoji_component>(char32_t c) {
-    return detail::tables::prop_emoji_component_data.lookup(c);
-}
+constexpr bool cp_property_is<property::emoji_component>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::emoji_modifier>(char32_t c) {
-    return detail::tables::prop_emoji_modifier_data.lookup(c);
-}
+constexpr bool cp_property_is<property::emoji_modifier>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::emoji_modifier_base>(char32_t c) {
-    return detail::tables::prop_emoji_modifier_base_data.lookup(c);
-}
+constexpr bool cp_property_is<property::emoji_modifier_base>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::emoji_presentation>(char32_t c) {
-    return detail::tables::prop_emoji_presentation_data.lookup(c);
-}
+constexpr bool cp_property_is<property::emoji_presentation>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::ext>(char32_t c) {
-    return detail::tables::prop_ext_data.lookup(c);
-}
+constexpr bool cp_property_is<property::ext>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::extended_pictographic>(char32_t c) {
-    return detail::tables::prop_extended_pictographic_data.lookup(c);
-}
+constexpr bool cp_property_is<property::extended_pictographic>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::gr_base>(char32_t c) {
-    return detail::tables::prop_gr_base_data.lookup(c);
-}
+constexpr bool cp_property_is<property::gr_base>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::hex>(char32_t c) {
-    return detail::tables::prop_hex_data.lookup(c);
-}
+constexpr bool cp_property_is<property::hex>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::ideo>(char32_t c) {
-    return detail::tables::prop_ideo_data.lookup(c);
-}
+constexpr bool cp_property_is<property::ideo>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::idsb>(char32_t c) {
-    return detail::tables::prop_idsb_data.lookup(c);
-}
+constexpr bool cp_property_is<property::idsb>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::idst>(char32_t c) {
-    return detail::tables::prop_idst_data.lookup(c);
-}
+constexpr bool cp_property_is<property::idst>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::join_c>(char32_t c) {
-    return detail::tables::prop_join_c_data.lookup(c);
-}
+constexpr bool cp_property_is<property::join_c>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::loe>(char32_t c) {
-    return detail::tables::prop_loe_data.lookup(c);
-}
+constexpr bool cp_property_is<property::loe>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::pat_syn>(char32_t c) {
-    return detail::tables::prop_pat_syn_data.lookup(c);
-}
+constexpr bool cp_property_is<property::pat_syn>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::pat_ws>(char32_t c) {
-    return detail::tables::prop_pat_ws_data.lookup(c);
-}
+constexpr bool cp_property_is<property::pat_ws>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::pcm>(char32_t c) {
-    return detail::tables::prop_pcm_data.lookup(c);
-}
+constexpr bool cp_property_is<property::pcm>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::qmark>(char32_t c) {
-    return detail::tables::prop_qmark_data.lookup(c);
-}
+constexpr bool cp_property_is<property::qmark>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::radical>(char32_t c) {
-    return detail::tables::prop_radical_data.lookup(c);
-}
+constexpr bool cp_property_is<property::radical>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::ri>(char32_t c) {
-    return detail::tables::prop_ri_data.lookup(c);
-}
+constexpr bool cp_property_is<property::ri>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::sd>(char32_t c) {
-    return detail::tables::prop_sd_data.lookup(c);
-}
+constexpr bool cp_property_is<property::sd>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::sterm>(char32_t c) {
-    return detail::tables::prop_sterm_data.lookup(c);
-}
+constexpr bool cp_property_is<property::sterm>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::term>(char32_t c) {
-    return detail::tables::prop_term_data.lookup(c);
-}
+constexpr bool cp_property_is<property::term>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::uideo>(char32_t c) {
-    return detail::tables::prop_uideo_data.lookup(c);
-}
+constexpr bool cp_property_is<property::uideo>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::vs>(char32_t c) {
-    return detail::tables::prop_vs_data.lookup(c);
-}
+constexpr bool cp_property_is<property::vs>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::wspace>(char32_t c) {
-    return detail::tables::prop_wspace_data.lookup(c);
-}
+constexpr bool cp_property_is<property::wspace>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::xidc>(char32_t c) {
-    return detail::tables::prop_xidc_data.lookup(c);
-}
+constexpr bool cp_property_is<property::xidc>(char32_t c) { return {}; }
 template<>
-constexpr bool cp_property_is<property::xids>(char32_t c) {
-    return detail::tables::prop_xids_data.lookup(c);
-}
+constexpr bool cp_property_is<property::xids>(char32_t c) { return {}; }
 }    // namespace uni
 
 #ifndef UNICODE_DB_IN_A_MODULE
@@ -7251,100 +6776,40 @@ constexpr bool cp_property_is<property::xids>(char32_t c) {
 
 namespace uni {
 
-constexpr category cp_category(char32_t cp) {
-    if(cp > 0x10FFFF)
-        return category::unassigned;
-    return detail::tables::get_category(cp);
-}
+constexpr category cp_category(char32_t cp) { return {}; }
 
-constexpr uni::version detail::age_from_string(std::string_view a) {
-    for(std::size_t i = 0; i < std::size(detail::tables::age_strings); ++i) {
-        const auto res = detail::propnamecomp(a, detail::tables::age_strings[i]);
-        if(res == 0)
-            return uni::version(i);
-    }
-    return uni::version::unassigned;
-}
+constexpr uni::version detail::age_from_string(std::string_view a) { return {}; }
 
-constexpr category detail::category_from_string(std::string_view s) {
-    for(const auto& c : detail::tables::categories_names) {
-        const auto res = detail::propnamecomp(s, c.name);
-        if(res == 0)
-            return category(c.value);
-    }
-    return category::unassigned;
-}
+constexpr category detail::category_from_string(std::string_view s) { return {}; }
 
-constexpr block detail::block_from_string(std::string_view s) {
-    for(const auto& c : detail::tables::blocks_names) {
-        const auto res = detail::propnamecomp(s, c.name);
-        if(res == 0)
-            return block(c.value);
-    }
-    return block::no_block;
-}
+constexpr block detail::block_from_string(std::string_view s) { return {}; }
 
-constexpr script detail::script_from_string(std::string_view s) {
-    for(const auto& c : detail::tables::scripts_names) {
-        const auto res = detail::propnamecomp(s, c.name);
-        if(res == 0)
-            return script(c.value);
-    }
-    return script::unknown;
-}
+constexpr script detail::script_from_string(std::string_view s) { return {}; }
 
-constexpr bool detail::is_unassigned(category cat) {
-    return cat == category::unassigned;
-}
+constexpr bool detail::is_unassigned(category cat) { return {}; }
 
-constexpr bool detail::is_unknown(script s) {
-    return s == script::unknown;
-}
+constexpr bool detail::is_unknown(script s) { return {}; }
 
-constexpr bool detail::is_unknown(block b) {
-    return b == block::no_block;
-}
+constexpr bool detail::is_unknown(block b) { return {}; }
 
-constexpr bool detail::is_unassigned(version v) {
-    return v == version::unassigned;
-}
+constexpr bool detail::is_unassigned(version v) { return {}; }
 
-constexpr script cp_script(char32_t cp) {
-    return detail::tables::cp_script<0>(cp);
-}
+constexpr script cp_script(char32_t cp) { return {}; }
 
-constexpr script_extensions_view::script_extensions_view(char32_t c_) : c(c_) {}
+constexpr script_extensions_view::script_extensions_view(char32_t c_) : c(c_) { }
 
 constexpr script_extensions_view::iterator::iterator(char32_t c_) :
-    m_c(c_), m_script(detail::tables::get_cp_script(m_c, 1)) {
-    if(m_script == script::unknown)
-        m_script = detail::tables::cp_script<0>(m_c);
-}
+    m_c(c_), m_script(detail::tables::get_cp_script(m_c, 1)) { }
 
-constexpr script script_extensions_view::iterator::operator*() const {
-    return m_script;
-}
+constexpr script script_extensions_view::iterator::operator*() const { return {}; }
 
-constexpr auto script_extensions_view::iterator::operator++(int) -> iterator& {
-    idx++;
-    m_script = detail::tables::get_cp_script(m_c, idx);
-    return *this;
-}
+constexpr auto script_extensions_view::iterator::operator++(int) -> iterator& { return {}; }
 
-constexpr auto script_extensions_view::iterator::operator++() -> iterator {
-    auto c = *this;
-    idx++;
-    m_script = detail::tables::get_cp_script(m_c, idx);
-    return c;
-}
+constexpr auto script_extensions_view::iterator::operator++() -> iterator { return {}; }
 
-constexpr bool script_extensions_view::iterator::operator==(sentinel) const {
-    return m_script == script::unknown;
-}
+constexpr bool script_extensions_view::iterator::operator==(sentinel) const { return {}; }
 
-constexpr bool script_extensions_view::iterator::operator!=(sentinel) const {
-    return m_script != script::unknown;
-}
+constexpr bool script_extensions_view::iterator::operator!=(sentinel) const { return {}; }
 
 /*constexpr bool script_extensions_view::iterator::operator==(iterator it) const {
     return m_script == it.m_script && m_c == it.m_c;
@@ -7353,172 +6818,65 @@ constexpr bool script_extensions_view::iterator::operator!=(iterator it) const {
     return !(*this == it);
 };*/
 
-constexpr script_extensions_view::iterator script_extensions_view::begin() const {
-    return iterator{c};
-}
-constexpr script_extensions_view::sentinel script_extensions_view::end() const {
-    return {};
-}
+constexpr script_extensions_view::iterator script_extensions_view::begin() const { return {}; }
+constexpr script_extensions_view::sentinel script_extensions_view::end() const { return {}; }
 
-constexpr script_extensions_view cp_script_extensions(char32_t cp) {
-    return script_extensions_view(cp);
-}
+constexpr script_extensions_view cp_script_extensions(char32_t cp) { return {}; }
 
-constexpr version cp_age(char32_t cp) {
-    return static_cast<version>(detail::tables::age_data.value(cp, uint8_t(version::unassigned)));
-}
+constexpr version cp_age(char32_t cp) { return {}; }
 
-constexpr block cp_block(char32_t cp) {
-    const auto end = std::end(detail::tables::block_data._data);
-    auto it = detail::upper_bound(std::begin(detail::tables::block_data._data), end, cp,
-                                  [](char32_t cp_, uint32_t v) {
-                                      char32_t c = (v >> 8);
-                                      return cp_ < c;
-                                  });
-    if(it == end)
-        return block::no_block;
-    it--;
-    auto offset = (*it) & 0xFF;
-    if(offset == 0)
-        return block::no_block;
-    offset--;
-
-    const auto d = std::distance(std::begin(detail::tables::block_data._data), it);
-    return uni::block((d - offset) + 1);
-}
+constexpr block cp_block(char32_t cp) { return {}; }
 
 template<>
-constexpr bool cp_property_is<property::noncharacter_code_point>(char32_t cp) {
-    return (char32_t(cp) & 0xfffe) == 0xfffe || (char32_t(cp) >= 0xfdd0 && char32_t(cp) <= 0xfdef);
-}
+constexpr bool cp_property_is<property::noncharacter_code_point>(char32_t cp) { return {}; }
 
 // http://unicode.org/reports/tr44/#Lowercase
 template<>
-constexpr bool cp_property_is<property::lowercase>(char32_t cp) {
-    return detail::tables::cat_ll.lookup(char32_t(cp)) ||
-           detail::tables::prop_olower_data.lookup(char32_t(cp));
-}
+constexpr bool cp_property_is<property::lowercase>(char32_t cp) { return {}; }
 
 // http://unicode.org/reports/tr44/#Uppercase
 template<>
-constexpr bool cp_property_is<property::uppercase>(char32_t cp) {
-    return detail::tables::cat_lu.lookup(char32_t(cp)) ||
-           detail::tables::prop_oupper_data.lookup(char32_t(cp));
-}
+constexpr bool cp_property_is<property::uppercase>(char32_t cp) { return {}; }
 
 // http://unicode.org/reports/tr44/#Cased
 template<>
-constexpr bool cp_property_is<property::cased>(char32_t cp) {
-    return cp_property_is<property::lower>(cp) || cp_property_is<property::upper>(cp) ||
-           detail::tables::cat_lt.lookup(char32_t(cp));
-}
+constexpr bool cp_property_is<property::cased>(char32_t cp) { return {}; }
 
 // http://unicode.org/reports/tr44/#Math
 template<>
-constexpr bool cp_property_is<property::math>(char32_t cp) {
-    return detail::tables::cat_sm.lookup(char32_t(cp)) ||
-           detail::tables::prop_omath_data.lookup(cp);
-}
+constexpr bool cp_property_is<property::math>(char32_t cp) { return {}; }
 
 // http://unicode.org/reports/tr44/#Case_Ignorable
 template<>
-constexpr bool cp_property_is<property::case_ignorable>(char32_t) {
-    return false;
-}
+constexpr bool cp_property_is<property::case_ignorable>(char32_t) { return {}; }
 
 // http://unicode.org/reports/tr44/#Grapheme_Extend
 template<>
-constexpr bool cp_property_is<property::grapheme_extend>(char32_t cp) {
-    return detail::tables::cat_me.lookup(char32_t(cp)) ||
-           detail::tables::cat_mn.lookup(char32_t(cp)) ||
-           detail::tables::prop_ogr_ext_data.lookup(cp);
-}
+constexpr bool cp_property_is<property::grapheme_extend>(char32_t cp) { return {}; }
 
-constexpr bool cp_is_valid(char32_t cp) {
-    return char32_t(cp) <= 0x10FFFF;
-}
-constexpr bool cp_is_assigned(char32_t cp) {
-    return detail::tables::prop_assigned.lookup(char32_t(cp));
-}
+constexpr bool cp_is_valid(char32_t cp) { return {}; }
+constexpr bool cp_is_assigned(char32_t cp) { return {}; }
 
-constexpr bool cp_is_ascii(char32_t cp) {
-    return char32_t(cp) <= 0x7F;
-}
+constexpr bool cp_is_ascii(char32_t cp) { return {}; }
 
 template<>
-constexpr bool cp_property_is<property::default_ignorable_code_point>(char32_t cp) {
-    const auto c = char32_t(cp);
-    const bool maybe = detail::tables::prop_odi_data.lookup(cp) ||
-                       detail::tables::cat_cf.lookup(cp) || detail::tables::prop_vs_data.lookup(cp);
-    if(!maybe)
-        return false;
-    // ignore (Interlinear annotation format characters
-    if(c >= 0xFFF9 && c <= 0xFFFB) {
-        return false;
-    }
-    // Ignore Egyptian hieroglyph format characters
-    else if(c >= 0x13430 && c <= 0x13438) {
-        return false;
-    } else if(detail::tables::prop_wspace_data.lookup(cp))
-        return false;
-    else if(detail::tables::prop_pcm_data.lookup(cp))
-        return false;
-    return true;
-}
+constexpr bool cp_property_is<property::default_ignorable_code_point>(char32_t cp) { return {}; }
 
 // http://www.unicode.org/reports/tr31/#D1
 template<>
-constexpr bool cp_property_is<property::id_start>(char32_t cp) {
-    const bool maybe = cp_category_is<category::letter>(cp) || detail::tables::cat_nl.lookup(cp) ||
-                       detail::tables::prop_oids_data.lookup(cp);
-    if(!maybe)
-        return false;
-    return !detail::tables::prop_pat_syn_data.lookup(cp) &&
-           !detail::tables::prop_pat_ws_data.lookup(cp);
-}
+constexpr bool cp_property_is<property::id_start>(char32_t cp) { return {}; }
 
 template<>
-constexpr bool cp_property_is<property::id_continue>(char32_t cp) {
-    const bool maybe = cp_category_is<category::letter>(cp) || detail::tables::cat_nl.lookup(cp) ||
-                       detail::tables::prop_oids_data.lookup(cp) ||
-                       detail::tables::cat_mn.lookup(cp) || detail::tables::cat_mc.lookup(cp) ||
-                       detail::tables::cat_nd.lookup(cp) || detail::tables::cat_pc.lookup(cp) ||
-                       detail::tables::prop_oidc_data.lookup(cp);
-    if(!maybe)
-        return false;
-    return !detail::tables::prop_pat_syn_data.lookup(cp) &&
-           !detail::tables::prop_pat_ws_data.lookup(cp);
-}
+constexpr bool cp_property_is<property::id_continue>(char32_t cp) { return {}; }
 
 namespace detail {
 
     template<typename Array, typename Res = long long>
-    constexpr bool get_numeric_value(char32_t cp, const Array& array, Res& res) {
-        auto it = detail::lower_bound(std::begin(array), std::end(array), cp,
-                                      [](const auto& d, char32_t cp_) { return d.first < cp_; });
-        if(it == std::end(array) || it->first != cp)
-            return false;
-        res = it->second;
-        return true;
-    }
+    constexpr bool get_numeric_value(char32_t cp, const Array& array, Res& res) { return {}; }
 
 }    // namespace detail
 
-constexpr numeric_value cp_numeric_value(char32_t cp) {
-    long long res = 0;
-    if(!(detail::get_numeric_value(cp, detail::tables::numeric_data64, res) ||
-             detail::get_numeric_value(cp, detail::tables::numeric_data32, res) ||
-             detail::get_numeric_value(cp, detail::tables::numeric_data16, res) ||
-             [&res, cp]() -> bool {
-           res = detail::tables::numeric_data8.value(cp, 255);
-           return res != 255;
-       }())) {
-        return {};
-    }
-    int16_t d = 1;
-    detail::get_numeric_value(cp, detail::tables::numeric_data_d, d);
-    return numeric_value(res, d);
-}
+constexpr numeric_value cp_numeric_value(char32_t cp) { return {}; }
 
 }    // namespace uni
 
@@ -7788,1234 +7146,742 @@ enum class binary_prop {
 };
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ahex>(char32_t c) {
-    return cp_property_is<property::ahex>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ahex>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::alpha>(char32_t c) {
-    return cp_property_is<property::alpha>(c);
-}
+constexpr bool get_binary_prop<binary_prop::alpha>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bidi_c>(char32_t c) {
-    return cp_property_is<property::bidi_c>(c);
-}
+constexpr bool get_binary_prop<binary_prop::bidi_c>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bidi_m>(char32_t c) {
-    return cp_property_is<property::bidi_m>(c);
-}
+constexpr bool get_binary_prop<binary_prop::bidi_m>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cased>(char32_t c) {
-    return cp_property_is<property::cased>(c);
-}
+constexpr bool get_binary_prop<binary_prop::cased>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ci>(char32_t c) {
-    return cp_property_is<property::ci>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ci>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::dash>(char32_t c) {
-    return cp_property_is<property::dash>(c);
-}
+constexpr bool get_binary_prop<binary_prop::dash>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::dep>(char32_t c) {
-    return cp_property_is<property::dep>(c);
-}
+constexpr bool get_binary_prop<binary_prop::dep>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::di>(char32_t c) {
-    return cp_property_is<property::di>(c);
-}
+constexpr bool get_binary_prop<binary_prop::di>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::dia>(char32_t c) {
-    return cp_property_is<property::dia>(c);
-}
+constexpr bool get_binary_prop<binary_prop::dia>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::emoji>(char32_t c) {
-    return cp_property_is<property::emoji>(c);
-}
+constexpr bool get_binary_prop<binary_prop::emoji>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::emoji_component>(char32_t c) {
-    return cp_property_is<property::emoji_component>(c);
-}
+constexpr bool get_binary_prop<binary_prop::emoji_component>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::emoji_modifier>(char32_t c) {
-    return cp_property_is<property::emoji_modifier>(c);
-}
+constexpr bool get_binary_prop<binary_prop::emoji_modifier>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::emoji_modifier_base>(char32_t c) {
-    return cp_property_is<property::emoji_modifier_base>(c);
-}
+constexpr bool get_binary_prop<binary_prop::emoji_modifier_base>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::emoji_presentation>(char32_t c) {
-    return cp_property_is<property::emoji_presentation>(c);
-}
+constexpr bool get_binary_prop<binary_prop::emoji_presentation>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ext>(char32_t c) {
-    return cp_property_is<property::ext>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ext>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::extended_pictographic>(char32_t c) {
-    return cp_property_is<property::extended_pictographic>(c);
-}
+constexpr bool get_binary_prop<binary_prop::extended_pictographic>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::gr_base>(char32_t c) {
-    return cp_property_is<property::gr_base>(c);
-}
+constexpr bool get_binary_prop<binary_prop::gr_base>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::gr_ext>(char32_t c) {
-    return cp_property_is<property::gr_ext>(c);
-}
+constexpr bool get_binary_prop<binary_prop::gr_ext>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hex>(char32_t c) {
-    return cp_property_is<property::hex>(c);
-}
+constexpr bool get_binary_prop<binary_prop::hex>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::idc>(char32_t c) {
-    return cp_property_is<property::idc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::idc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ideo>(char32_t c) {
-    return cp_property_is<property::ideo>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ideo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ids>(char32_t c) {
-    return cp_property_is<property::ids>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ids>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::idsb>(char32_t c) {
-    return cp_property_is<property::idsb>(c);
-}
+constexpr bool get_binary_prop<binary_prop::idsb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::idst>(char32_t c) {
-    return cp_property_is<property::idst>(c);
-}
+constexpr bool get_binary_prop<binary_prop::idst>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::join_c>(char32_t c) {
-    return cp_property_is<property::join_c>(c);
-}
+constexpr bool get_binary_prop<binary_prop::join_c>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::loe>(char32_t c) {
-    return cp_property_is<property::loe>(c);
-}
+constexpr bool get_binary_prop<binary_prop::loe>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lower>(char32_t c) {
-    return cp_property_is<property::lower>(c);
-}
+constexpr bool get_binary_prop<binary_prop::lower>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::math>(char32_t c) {
-    return cp_property_is<property::math>(c);
-}
+constexpr bool get_binary_prop<binary_prop::math>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nchar>(char32_t c) {
-    return cp_property_is<property::nchar>(c);
-}
+constexpr bool get_binary_prop<binary_prop::nchar>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pat_syn>(char32_t c) {
-    return cp_property_is<property::pat_syn>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pat_syn>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pat_ws>(char32_t c) {
-    return cp_property_is<property::pat_ws>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pat_ws>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pcm>(char32_t c) {
-    return cp_property_is<property::pcm>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pcm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::qmark>(char32_t c) {
-    return cp_property_is<property::qmark>(c);
-}
+constexpr bool get_binary_prop<binary_prop::qmark>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::radical>(char32_t c) {
-    return cp_property_is<property::radical>(c);
-}
+constexpr bool get_binary_prop<binary_prop::radical>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ri>(char32_t c) {
-    return cp_property_is<property::ri>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ri>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sd>(char32_t c) {
-    return cp_property_is<property::sd>(c);
-}
+constexpr bool get_binary_prop<binary_prop::sd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sterm>(char32_t c) {
-    return cp_property_is<property::sterm>(c);
-}
+constexpr bool get_binary_prop<binary_prop::sterm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::term>(char32_t c) {
-    return cp_property_is<property::term>(c);
-}
+constexpr bool get_binary_prop<binary_prop::term>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::uideo>(char32_t c) {
-    return cp_property_is<property::uideo>(c);
-}
+constexpr bool get_binary_prop<binary_prop::uideo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::upper>(char32_t c) {
-    return cp_property_is<property::upper>(c);
-}
+constexpr bool get_binary_prop<binary_prop::upper>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::vs>(char32_t c) {
-    return cp_property_is<property::vs>(c);
-}
+constexpr bool get_binary_prop<binary_prop::vs>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::wspace>(char32_t c) {
-    return cp_property_is<property::wspace>(c);
-}
+constexpr bool get_binary_prop<binary_prop::wspace>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::xidc>(char32_t c) {
-    return cp_property_is<property::xidc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::xidc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::xids>(char32_t c) {
-    return cp_property_is<property::xids>(c);
-}
+constexpr bool get_binary_prop<binary_prop::xids>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::c>(char32_t c) {
-    return cp_category_is<category::c>(c);
-}
+constexpr bool get_binary_prop<binary_prop::c>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cc>(char32_t c) {
-    return cp_category_is<category::cc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::cc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cf>(char32_t c) {
-    return cp_category_is<category::cf>(c);
-}
+constexpr bool get_binary_prop<binary_prop::cf>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cn>(char32_t c) {
-    return cp_category_is<category::cn>(c);
-}
+constexpr bool get_binary_prop<binary_prop::cn>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::co>(char32_t c) {
-    return cp_category_is<category::co>(c);
-}
+constexpr bool get_binary_prop<binary_prop::co>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cs>(char32_t c) {
-    return cp_category_is<category::cs>(c);
-}
+constexpr bool get_binary_prop<binary_prop::cs>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::l>(char32_t c) {
-    return cp_category_is<category::l>(c);
-}
+constexpr bool get_binary_prop<binary_prop::l>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lc>(char32_t c) {
-    return cp_category_is<category::lc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::lc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ll>(char32_t c) {
-    return cp_category_is<category::ll>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ll>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lm>(char32_t c) {
-    return cp_category_is<category::lm>(c);
-}
+constexpr bool get_binary_prop<binary_prop::lm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lo>(char32_t c) {
-    return cp_category_is<category::lo>(c);
-}
+constexpr bool get_binary_prop<binary_prop::lo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lt>(char32_t c) {
-    return cp_category_is<category::lt>(c);
-}
+constexpr bool get_binary_prop<binary_prop::lt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lu>(char32_t c) {
-    return cp_category_is<category::lu>(c);
-}
+constexpr bool get_binary_prop<binary_prop::lu>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::m>(char32_t c) {
-    return cp_category_is<category::m>(c);
-}
+constexpr bool get_binary_prop<binary_prop::m>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mc>(char32_t c) {
-    return cp_category_is<category::mc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::mc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::me>(char32_t c) {
-    return cp_category_is<category::me>(c);
-}
+constexpr bool get_binary_prop<binary_prop::me>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mn>(char32_t c) {
-    return cp_category_is<category::mn>(c);
-}
+constexpr bool get_binary_prop<binary_prop::mn>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::n>(char32_t c) {
-    return cp_category_is<category::n>(c);
-}
+constexpr bool get_binary_prop<binary_prop::n>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nd>(char32_t c) {
-    return cp_category_is<category::nd>(c);
-}
+constexpr bool get_binary_prop<binary_prop::nd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nl>(char32_t c) {
-    return cp_category_is<category::nl>(c);
-}
+constexpr bool get_binary_prop<binary_prop::nl>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::no>(char32_t c) {
-    return cp_category_is<category::no>(c);
-}
+constexpr bool get_binary_prop<binary_prop::no>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::p>(char32_t c) {
-    return cp_category_is<category::p>(c);
-}
+constexpr bool get_binary_prop<binary_prop::p>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pc>(char32_t c) {
-    return cp_category_is<category::pc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pd>(char32_t c) {
-    return cp_category_is<category::pd>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pe>(char32_t c) {
-    return cp_category_is<category::pe>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pe>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pf>(char32_t c) {
-    return cp_category_is<category::pf>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pf>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pi>(char32_t c) {
-    return cp_category_is<category::pi>(c);
-}
+constexpr bool get_binary_prop<binary_prop::pi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::po>(char32_t c) {
-    return cp_category_is<category::po>(c);
-}
+constexpr bool get_binary_prop<binary_prop::po>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ps>(char32_t c) {
-    return cp_category_is<category::ps>(c);
-}
+constexpr bool get_binary_prop<binary_prop::ps>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::s>(char32_t c) {
-    return cp_category_is<category::s>(c);
-}
+constexpr bool get_binary_prop<binary_prop::s>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sc>(char32_t c) {
-    return cp_category_is<category::sc>(c);
-}
+constexpr bool get_binary_prop<binary_prop::sc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sk>(char32_t c) {
-    return cp_category_is<category::sk>(c);
-}
+constexpr bool get_binary_prop<binary_prop::sk>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sm>(char32_t c) {
-    return cp_category_is<category::sm>(c);
-}
+constexpr bool get_binary_prop<binary_prop::sm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::so>(char32_t c) {
-    return cp_category_is<category::so>(c);
-}
+constexpr bool get_binary_prop<binary_prop::so>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::z>(char32_t c) {
-    return cp_category_is<category::z>(c);
-}
+constexpr bool get_binary_prop<binary_prop::z>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zl>(char32_t c) {
-    return cp_category_is<category::zl>(c);
-}
+constexpr bool get_binary_prop<binary_prop::zl>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zp>(char32_t c) {
-    return cp_category_is<category::zp>(c);
-}
+constexpr bool get_binary_prop<binary_prop::zp>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zs>(char32_t c) {
-    return cp_category_is<category::zs>(c);
-}
+constexpr bool get_binary_prop<binary_prop::zs>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::adlm>(char32_t c) {
-    return cp_script(c) == script::adlm;
-}
+constexpr bool get_binary_prop<binary_prop::adlm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::aghb>(char32_t c) {
-    return cp_script(c) == script::aghb;
-}
+constexpr bool get_binary_prop<binary_prop::aghb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ahom>(char32_t c) {
-    return cp_script(c) == script::ahom;
-}
+constexpr bool get_binary_prop<binary_prop::ahom>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::arab>(char32_t c) {
-    return cp_script(c) == script::arab;
-}
+constexpr bool get_binary_prop<binary_prop::arab>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::armi>(char32_t c) {
-    return cp_script(c) == script::armi;
-}
+constexpr bool get_binary_prop<binary_prop::armi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::armn>(char32_t c) {
-    return cp_script(c) == script::armn;
-}
+constexpr bool get_binary_prop<binary_prop::armn>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::avst>(char32_t c) {
-    return cp_script(c) == script::avst;
-}
+constexpr bool get_binary_prop<binary_prop::avst>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bali>(char32_t c) {
-    return cp_script(c) == script::bali;
-}
+constexpr bool get_binary_prop<binary_prop::bali>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bamu>(char32_t c) {
-    return cp_script(c) == script::bamu;
-}
+constexpr bool get_binary_prop<binary_prop::bamu>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bass>(char32_t c) {
-    return cp_script(c) == script::bass;
-}
+constexpr bool get_binary_prop<binary_prop::bass>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::batk>(char32_t c) {
-    return cp_script(c) == script::batk;
-}
+constexpr bool get_binary_prop<binary_prop::batk>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::beng>(char32_t c) {
-    return cp_script(c) == script::beng;
-}
+constexpr bool get_binary_prop<binary_prop::beng>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bhks>(char32_t c) {
-    return cp_script(c) == script::bhks;
-}
+constexpr bool get_binary_prop<binary_prop::bhks>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bopo>(char32_t c) {
-    return cp_script(c) == script::bopo;
-}
+constexpr bool get_binary_prop<binary_prop::bopo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::brah>(char32_t c) {
-    return cp_script(c) == script::brah;
-}
+constexpr bool get_binary_prop<binary_prop::brah>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::brai>(char32_t c) {
-    return cp_script(c) == script::brai;
-}
+constexpr bool get_binary_prop<binary_prop::brai>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::bugi>(char32_t c) {
-    return cp_script(c) == script::bugi;
-}
+constexpr bool get_binary_prop<binary_prop::bugi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::buhd>(char32_t c) {
-    return cp_script(c) == script::buhd;
-}
+constexpr bool get_binary_prop<binary_prop::buhd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cakm>(char32_t c) {
-    return cp_script(c) == script::cakm;
-}
+constexpr bool get_binary_prop<binary_prop::cakm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cans>(char32_t c) {
-    return cp_script(c) == script::cans;
-}
+constexpr bool get_binary_prop<binary_prop::cans>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cari>(char32_t c) {
-    return cp_script(c) == script::cari;
-}
+constexpr bool get_binary_prop<binary_prop::cari>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cham>(char32_t c) {
-    return cp_script(c) == script::cham;
-}
+constexpr bool get_binary_prop<binary_prop::cham>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cher>(char32_t c) {
-    return cp_script(c) == script::cher;
-}
+constexpr bool get_binary_prop<binary_prop::cher>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::chrs>(char32_t c) {
-    return cp_script(c) == script::chrs;
-}
+constexpr bool get_binary_prop<binary_prop::chrs>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::copt>(char32_t c) {
-    return cp_script(c) == script::copt;
-}
+constexpr bool get_binary_prop<binary_prop::copt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cpmn>(char32_t c) {
-    return cp_script(c) == script::cpmn;
-}
+constexpr bool get_binary_prop<binary_prop::cpmn>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cprt>(char32_t c) {
-    return cp_script(c) == script::cprt;
-}
+constexpr bool get_binary_prop<binary_prop::cprt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::cyrl>(char32_t c) {
-    return cp_script(c) == script::cyrl;
-}
+constexpr bool get_binary_prop<binary_prop::cyrl>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::deva>(char32_t c) {
-    return cp_script(c) == script::deva;
-}
+constexpr bool get_binary_prop<binary_prop::deva>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::diak>(char32_t c) {
-    return cp_script(c) == script::diak;
-}
+constexpr bool get_binary_prop<binary_prop::diak>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::dogr>(char32_t c) {
-    return cp_script(c) == script::dogr;
-}
+constexpr bool get_binary_prop<binary_prop::dogr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::dsrt>(char32_t c) {
-    return cp_script(c) == script::dsrt;
-}
+constexpr bool get_binary_prop<binary_prop::dsrt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::dupl>(char32_t c) {
-    return cp_script(c) == script::dupl;
-}
+constexpr bool get_binary_prop<binary_prop::dupl>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::egyp>(char32_t c) {
-    return cp_script(c) == script::egyp;
-}
+constexpr bool get_binary_prop<binary_prop::egyp>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::elba>(char32_t c) {
-    return cp_script(c) == script::elba;
-}
+constexpr bool get_binary_prop<binary_prop::elba>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::elym>(char32_t c) {
-    return cp_script(c) == script::elym;
-}
+constexpr bool get_binary_prop<binary_prop::elym>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ethi>(char32_t c) {
-    return cp_script(c) == script::ethi;
-}
+constexpr bool get_binary_prop<binary_prop::ethi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::geor>(char32_t c) {
-    return cp_script(c) == script::geor;
-}
+constexpr bool get_binary_prop<binary_prop::geor>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::glag>(char32_t c) {
-    return cp_script(c) == script::glag;
-}
+constexpr bool get_binary_prop<binary_prop::glag>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::gong>(char32_t c) {
-    return cp_script(c) == script::gong;
-}
+constexpr bool get_binary_prop<binary_prop::gong>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::gonm>(char32_t c) {
-    return cp_script(c) == script::gonm;
-}
+constexpr bool get_binary_prop<binary_prop::gonm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::goth>(char32_t c) {
-    return cp_script(c) == script::goth;
-}
+constexpr bool get_binary_prop<binary_prop::goth>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::gran>(char32_t c) {
-    return cp_script(c) == script::gran;
-}
+constexpr bool get_binary_prop<binary_prop::gran>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::grek>(char32_t c) {
-    return cp_script(c) == script::grek;
-}
+constexpr bool get_binary_prop<binary_prop::grek>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::gujr>(char32_t c) {
-    return cp_script(c) == script::gujr;
-}
+constexpr bool get_binary_prop<binary_prop::gujr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::guru>(char32_t c) {
-    return cp_script(c) == script::guru;
-}
+constexpr bool get_binary_prop<binary_prop::guru>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hang>(char32_t c) {
-    return cp_script(c) == script::hang;
-}
+constexpr bool get_binary_prop<binary_prop::hang>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hani>(char32_t c) {
-    return cp_script(c) == script::hani;
-}
+constexpr bool get_binary_prop<binary_prop::hani>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hano>(char32_t c) {
-    return cp_script(c) == script::hano;
-}
+constexpr bool get_binary_prop<binary_prop::hano>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hatr>(char32_t c) {
-    return cp_script(c) == script::hatr;
-}
+constexpr bool get_binary_prop<binary_prop::hatr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hebr>(char32_t c) {
-    return cp_script(c) == script::hebr;
-}
+constexpr bool get_binary_prop<binary_prop::hebr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hira>(char32_t c) {
-    return cp_script(c) == script::hira;
-}
+constexpr bool get_binary_prop<binary_prop::hira>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hluw>(char32_t c) {
-    return cp_script(c) == script::hluw;
-}
+constexpr bool get_binary_prop<binary_prop::hluw>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hmng>(char32_t c) {
-    return cp_script(c) == script::hmng;
-}
+constexpr bool get_binary_prop<binary_prop::hmng>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hmnp>(char32_t c) {
-    return cp_script(c) == script::hmnp;
-}
+constexpr bool get_binary_prop<binary_prop::hmnp>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hrkt>(char32_t c) {
-    return cp_script(c) == script::hrkt;
-}
+constexpr bool get_binary_prop<binary_prop::hrkt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::hung>(char32_t c) {
-    return cp_script(c) == script::hung;
-}
+constexpr bool get_binary_prop<binary_prop::hung>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ital>(char32_t c) {
-    return cp_script(c) == script::ital;
-}
+constexpr bool get_binary_prop<binary_prop::ital>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::java>(char32_t c) {
-    return cp_script(c) == script::java;
-}
+constexpr bool get_binary_prop<binary_prop::java>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::kali>(char32_t c) {
-    return cp_script(c) == script::kali;
-}
+constexpr bool get_binary_prop<binary_prop::kali>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::kana>(char32_t c) {
-    return cp_script(c) == script::kana;
-}
+constexpr bool get_binary_prop<binary_prop::kana>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::khar>(char32_t c) {
-    return cp_script(c) == script::khar;
-}
+constexpr bool get_binary_prop<binary_prop::khar>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::khmr>(char32_t c) {
-    return cp_script(c) == script::khmr;
-}
+constexpr bool get_binary_prop<binary_prop::khmr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::khoj>(char32_t c) {
-    return cp_script(c) == script::khoj;
-}
+constexpr bool get_binary_prop<binary_prop::khoj>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::kits>(char32_t c) {
-    return cp_script(c) == script::kits;
-}
+constexpr bool get_binary_prop<binary_prop::kits>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::knda>(char32_t c) {
-    return cp_script(c) == script::knda;
-}
+constexpr bool get_binary_prop<binary_prop::knda>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::kthi>(char32_t c) {
-    return cp_script(c) == script::kthi;
-}
+constexpr bool get_binary_prop<binary_prop::kthi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lana>(char32_t c) {
-    return cp_script(c) == script::lana;
-}
+constexpr bool get_binary_prop<binary_prop::lana>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::laoo>(char32_t c) {
-    return cp_script(c) == script::laoo;
-}
+constexpr bool get_binary_prop<binary_prop::laoo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::latn>(char32_t c) {
-    return cp_script(c) == script::latn;
-}
+constexpr bool get_binary_prop<binary_prop::latn>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lepc>(char32_t c) {
-    return cp_script(c) == script::lepc;
-}
+constexpr bool get_binary_prop<binary_prop::lepc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::limb>(char32_t c) {
-    return cp_script(c) == script::limb;
-}
+constexpr bool get_binary_prop<binary_prop::limb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lina>(char32_t c) {
-    return cp_script(c) == script::lina;
-}
+constexpr bool get_binary_prop<binary_prop::lina>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::linb>(char32_t c) {
-    return cp_script(c) == script::linb;
-}
+constexpr bool get_binary_prop<binary_prop::linb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lisu>(char32_t c) {
-    return cp_script(c) == script::lisu;
-}
+constexpr bool get_binary_prop<binary_prop::lisu>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lyci>(char32_t c) {
-    return cp_script(c) == script::lyci;
-}
+constexpr bool get_binary_prop<binary_prop::lyci>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::lydi>(char32_t c) {
-    return cp_script(c) == script::lydi;
-}
+constexpr bool get_binary_prop<binary_prop::lydi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mahj>(char32_t c) {
-    return cp_script(c) == script::mahj;
-}
+constexpr bool get_binary_prop<binary_prop::mahj>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::maka>(char32_t c) {
-    return cp_script(c) == script::maka;
-}
+constexpr bool get_binary_prop<binary_prop::maka>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mand>(char32_t c) {
-    return cp_script(c) == script::mand;
-}
+constexpr bool get_binary_prop<binary_prop::mand>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mani>(char32_t c) {
-    return cp_script(c) == script::mani;
-}
+constexpr bool get_binary_prop<binary_prop::mani>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::marc>(char32_t c) {
-    return cp_script(c) == script::marc;
-}
+constexpr bool get_binary_prop<binary_prop::marc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::medf>(char32_t c) {
-    return cp_script(c) == script::medf;
-}
+constexpr bool get_binary_prop<binary_prop::medf>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mend>(char32_t c) {
-    return cp_script(c) == script::mend;
-}
+constexpr bool get_binary_prop<binary_prop::mend>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::merc>(char32_t c) {
-    return cp_script(c) == script::merc;
-}
+constexpr bool get_binary_prop<binary_prop::merc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mero>(char32_t c) {
-    return cp_script(c) == script::mero;
-}
+constexpr bool get_binary_prop<binary_prop::mero>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mlym>(char32_t c) {
-    return cp_script(c) == script::mlym;
-}
+constexpr bool get_binary_prop<binary_prop::mlym>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::modi>(char32_t c) {
-    return cp_script(c) == script::modi;
-}
+constexpr bool get_binary_prop<binary_prop::modi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mong>(char32_t c) {
-    return cp_script(c) == script::mong;
-}
+constexpr bool get_binary_prop<binary_prop::mong>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mroo>(char32_t c) {
-    return cp_script(c) == script::mroo;
-}
+constexpr bool get_binary_prop<binary_prop::mroo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mtei>(char32_t c) {
-    return cp_script(c) == script::mtei;
-}
+constexpr bool get_binary_prop<binary_prop::mtei>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mult>(char32_t c) {
-    return cp_script(c) == script::mult;
-}
+constexpr bool get_binary_prop<binary_prop::mult>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::mymr>(char32_t c) {
-    return cp_script(c) == script::mymr;
-}
+constexpr bool get_binary_prop<binary_prop::mymr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nand>(char32_t c) {
-    return cp_script(c) == script::nand;
-}
+constexpr bool get_binary_prop<binary_prop::nand>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::narb>(char32_t c) {
-    return cp_script(c) == script::narb;
-}
+constexpr bool get_binary_prop<binary_prop::narb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nbat>(char32_t c) {
-    return cp_script(c) == script::nbat;
-}
+constexpr bool get_binary_prop<binary_prop::nbat>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::newa>(char32_t c) {
-    return cp_script(c) == script::newa;
-}
+constexpr bool get_binary_prop<binary_prop::newa>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nkoo>(char32_t c) {
-    return cp_script(c) == script::nkoo;
-}
+constexpr bool get_binary_prop<binary_prop::nkoo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::nshu>(char32_t c) {
-    return cp_script(c) == script::nshu;
-}
+constexpr bool get_binary_prop<binary_prop::nshu>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ogam>(char32_t c) {
-    return cp_script(c) == script::ogam;
-}
+constexpr bool get_binary_prop<binary_prop::ogam>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::olck>(char32_t c) {
-    return cp_script(c) == script::olck;
-}
+constexpr bool get_binary_prop<binary_prop::olck>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::orkh>(char32_t c) {
-    return cp_script(c) == script::orkh;
-}
+constexpr bool get_binary_prop<binary_prop::orkh>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::orya>(char32_t c) {
-    return cp_script(c) == script::orya;
-}
+constexpr bool get_binary_prop<binary_prop::orya>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::osge>(char32_t c) {
-    return cp_script(c) == script::osge;
-}
+constexpr bool get_binary_prop<binary_prop::osge>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::osma>(char32_t c) {
-    return cp_script(c) == script::osma;
-}
+constexpr bool get_binary_prop<binary_prop::osma>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ougr>(char32_t c) {
-    return cp_script(c) == script::ougr;
-}
+constexpr bool get_binary_prop<binary_prop::ougr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::palm>(char32_t c) {
-    return cp_script(c) == script::palm;
-}
+constexpr bool get_binary_prop<binary_prop::palm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::pauc>(char32_t c) {
-    return cp_script(c) == script::pauc;
-}
+constexpr bool get_binary_prop<binary_prop::pauc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::perm>(char32_t c) {
-    return cp_script(c) == script::perm;
-}
+constexpr bool get_binary_prop<binary_prop::perm>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::phag>(char32_t c) {
-    return cp_script(c) == script::phag;
-}
+constexpr bool get_binary_prop<binary_prop::phag>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::phli>(char32_t c) {
-    return cp_script(c) == script::phli;
-}
+constexpr bool get_binary_prop<binary_prop::phli>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::phlp>(char32_t c) {
-    return cp_script(c) == script::phlp;
-}
+constexpr bool get_binary_prop<binary_prop::phlp>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::phnx>(char32_t c) {
-    return cp_script(c) == script::phnx;
-}
+constexpr bool get_binary_prop<binary_prop::phnx>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::plrd>(char32_t c) {
-    return cp_script(c) == script::plrd;
-}
+constexpr bool get_binary_prop<binary_prop::plrd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::prti>(char32_t c) {
-    return cp_script(c) == script::prti;
-}
+constexpr bool get_binary_prop<binary_prop::prti>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::rjng>(char32_t c) {
-    return cp_script(c) == script::rjng;
-}
+constexpr bool get_binary_prop<binary_prop::rjng>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::rohg>(char32_t c) {
-    return cp_script(c) == script::rohg;
-}
+constexpr bool get_binary_prop<binary_prop::rohg>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::runr>(char32_t c) {
-    return cp_script(c) == script::runr;
-}
+constexpr bool get_binary_prop<binary_prop::runr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::samr>(char32_t c) {
-    return cp_script(c) == script::samr;
-}
+constexpr bool get_binary_prop<binary_prop::samr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sarb>(char32_t c) {
-    return cp_script(c) == script::sarb;
-}
+constexpr bool get_binary_prop<binary_prop::sarb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::saur>(char32_t c) {
-    return cp_script(c) == script::saur;
-}
+constexpr bool get_binary_prop<binary_prop::saur>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sgnw>(char32_t c) {
-    return cp_script(c) == script::sgnw;
-}
+constexpr bool get_binary_prop<binary_prop::sgnw>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::shaw>(char32_t c) {
-    return cp_script(c) == script::shaw;
-}
+constexpr bool get_binary_prop<binary_prop::shaw>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::shrd>(char32_t c) {
-    return cp_script(c) == script::shrd;
-}
+constexpr bool get_binary_prop<binary_prop::shrd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sidd>(char32_t c) {
-    return cp_script(c) == script::sidd;
-}
+constexpr bool get_binary_prop<binary_prop::sidd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sind>(char32_t c) {
-    return cp_script(c) == script::sind;
-}
+constexpr bool get_binary_prop<binary_prop::sind>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sinh>(char32_t c) {
-    return cp_script(c) == script::sinh;
-}
+constexpr bool get_binary_prop<binary_prop::sinh>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sogd>(char32_t c) {
-    return cp_script(c) == script::sogd;
-}
+constexpr bool get_binary_prop<binary_prop::sogd>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sogo>(char32_t c) {
-    return cp_script(c) == script::sogo;
-}
+constexpr bool get_binary_prop<binary_prop::sogo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sora>(char32_t c) {
-    return cp_script(c) == script::sora;
-}
+constexpr bool get_binary_prop<binary_prop::sora>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::soyo>(char32_t c) {
-    return cp_script(c) == script::soyo;
-}
+constexpr bool get_binary_prop<binary_prop::soyo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sund>(char32_t c) {
-    return cp_script(c) == script::sund;
-}
+constexpr bool get_binary_prop<binary_prop::sund>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::sylo>(char32_t c) {
-    return cp_script(c) == script::sylo;
-}
+constexpr bool get_binary_prop<binary_prop::sylo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::syrc>(char32_t c) {
-    return cp_script(c) == script::syrc;
-}
+constexpr bool get_binary_prop<binary_prop::syrc>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tagb>(char32_t c) {
-    return cp_script(c) == script::tagb;
-}
+constexpr bool get_binary_prop<binary_prop::tagb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::takr>(char32_t c) {
-    return cp_script(c) == script::takr;
-}
+constexpr bool get_binary_prop<binary_prop::takr>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tale>(char32_t c) {
-    return cp_script(c) == script::tale;
-}
+constexpr bool get_binary_prop<binary_prop::tale>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::talu>(char32_t c) {
-    return cp_script(c) == script::talu;
-}
+constexpr bool get_binary_prop<binary_prop::talu>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::taml>(char32_t c) {
-    return cp_script(c) == script::taml;
-}
+constexpr bool get_binary_prop<binary_prop::taml>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tang>(char32_t c) {
-    return cp_script(c) == script::tang;
-}
+constexpr bool get_binary_prop<binary_prop::tang>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tavt>(char32_t c) {
-    return cp_script(c) == script::tavt;
-}
+constexpr bool get_binary_prop<binary_prop::tavt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::telu>(char32_t c) {
-    return cp_script(c) == script::telu;
-}
+constexpr bool get_binary_prop<binary_prop::telu>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tfng>(char32_t c) {
-    return cp_script(c) == script::tfng;
-}
+constexpr bool get_binary_prop<binary_prop::tfng>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tglg>(char32_t c) {
-    return cp_script(c) == script::tglg;
-}
+constexpr bool get_binary_prop<binary_prop::tglg>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::thaa>(char32_t c) {
-    return cp_script(c) == script::thaa;
-}
+constexpr bool get_binary_prop<binary_prop::thaa>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::thai>(char32_t c) {
-    return cp_script(c) == script::thai;
-}
+constexpr bool get_binary_prop<binary_prop::thai>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tibt>(char32_t c) {
-    return cp_script(c) == script::tibt;
-}
+constexpr bool get_binary_prop<binary_prop::tibt>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tirh>(char32_t c) {
-    return cp_script(c) == script::tirh;
-}
+constexpr bool get_binary_prop<binary_prop::tirh>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::tnsa>(char32_t c) {
-    return cp_script(c) == script::tnsa;
-}
+constexpr bool get_binary_prop<binary_prop::tnsa>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::toto>(char32_t c) {
-    return cp_script(c) == script::toto;
-}
+constexpr bool get_binary_prop<binary_prop::toto>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ugar>(char32_t c) {
-    return cp_script(c) == script::ugar;
-}
+constexpr bool get_binary_prop<binary_prop::ugar>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::vaii>(char32_t c) {
-    return cp_script(c) == script::vaii;
-}
+constexpr bool get_binary_prop<binary_prop::vaii>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::vith>(char32_t c) {
-    return cp_script(c) == script::vith;
-}
+constexpr bool get_binary_prop<binary_prop::vith>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::wara>(char32_t c) {
-    return cp_script(c) == script::wara;
-}
+constexpr bool get_binary_prop<binary_prop::wara>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::wcho>(char32_t c) {
-    return cp_script(c) == script::wcho;
-}
+constexpr bool get_binary_prop<binary_prop::wcho>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::xpeo>(char32_t c) {
-    return cp_script(c) == script::xpeo;
-}
+constexpr bool get_binary_prop<binary_prop::xpeo>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::xsux>(char32_t c) {
-    return cp_script(c) == script::xsux;
-}
+constexpr bool get_binary_prop<binary_prop::xsux>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::yezi>(char32_t c) {
-    return cp_script(c) == script::yezi;
-}
+constexpr bool get_binary_prop<binary_prop::yezi>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::yiii>(char32_t c) {
-    return cp_script(c) == script::yiii;
-}
+constexpr bool get_binary_prop<binary_prop::yiii>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zanb>(char32_t c) {
-    return cp_script(c) == script::zanb;
-}
+constexpr bool get_binary_prop<binary_prop::zanb>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zinh>(char32_t c) {
-    return cp_script(c) == script::zinh;
-}
+constexpr bool get_binary_prop<binary_prop::zinh>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zyyy>(char32_t c) {
-    return cp_script(c) == script::zyyy;
-}
+constexpr bool get_binary_prop<binary_prop::zyyy>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::zzzz>(char32_t c) {
-    return cp_script(c) == script::zzzz;
-}
+constexpr bool get_binary_prop<binary_prop::zzzz>(char32_t c) { return {}; }
 namespace tables {
     static constexpr string_with_idx binary_prop_names[] = {
         string_with_idx{"adlam", 86},
@@ -9504,32 +8370,17 @@ namespace tables {
 
 namespace uni::detail {
 
-constexpr binary_prop binary_prop_from_string(std::string_view s) {
-    for(const auto& c : tables::binary_prop_names) {
-        const auto res = propnamecomp(s, c.name);
-        if(res == 0)
-            return binary_prop(c.value);
-    }
-    return binary_prop::unknown;
-}
+constexpr binary_prop binary_prop_from_string(std::string_view s) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::ascii>(char32_t c) {
-    return cp_is_ascii(c);
-}
+constexpr bool get_binary_prop<binary_prop::ascii>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::assigned>(char32_t c) {
-    return cp_is_assigned(c);
-}
+constexpr bool get_binary_prop<binary_prop::assigned>(char32_t c) { return {}; }
 
 template<>
-constexpr bool get_binary_prop<binary_prop::any>(char32_t c) {
-    return cp_is_valid(c);
-}
+constexpr bool get_binary_prop<binary_prop::any>(char32_t c) { return {}; }
 
-constexpr bool is_unknown(binary_prop s) {
-    return s == binary_prop::unknown;
-}
+constexpr bool is_unknown(binary_prop s) { return {}; }
 
 }    // namespace uni::detail
